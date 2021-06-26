@@ -1,46 +1,53 @@
-import './PhysicsRender.css'
+import './PhysicsWorld.css'
 
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useCallback } from 'react'
 import Matter, { Engine, Runner, Render, World, Bodies, Body, Vector, Composite } from 'matter-js'
 import { useAppData } from '../AppDataProvider'
 import squidImage from '../../assets/squidhead.png'
 import tentaclePartImage from '../../assets/tentaclepart.png'
 
-const PhysicsRender: React.FC<{ className?: string }> = ({ className }) => {
+const PhysicsWorld: React.FC<{ className?: string }> = ({ className }) => {
 	const { data } = useAppData()
 
 	const scene = useRef<HTMLDivElement>(null)
 	const engine = useRef<Engine>(Engine.create({}))
-
 	const width = 1000
 	const height = 600
-	const wallThickness = 10
 
 	useEffect(() => {
 		if (scene.current == null) return
 
-		scene.current.innerHTML = ''
-		const render = Render.create({
-			element: scene.current,
-			engine: engine.current,
-			options: {
-				width,
-				height,
-				wireframes: false,
-			},
-		})
-		World.add(engine.current.world, [
-			// walls
-			// Bodies.rectangle(width / 2, 0, width, wallThickness, { isStatic: true }),
-			// Bodies.rectangle(0, height / 2, wallThickness, height, { isStatic: true }),
-			// Bodies.rectangle(width, height / 2, wallThickness, height, { isStatic: true }),
-			// Bodies.rectangle(width / 2, height, width, wallThickness, { isStatic: true }),
-		])
-		Runner.run(engine.current)
-		Render.run(render)
+		const createWalls = () => {
+			const wallThickness = 10
+			World.add(engine.current.world, [
+				Bodies.rectangle(width / 2, 0, width, wallThickness, { isStatic: true }),
+				Bodies.rectangle(0, height / 2, wallThickness, height, { isStatic: true }),
+				Bodies.rectangle(width, height / 2, wallThickness, height, { isStatic: true }),
+				// Bodies.rectangle(width / 2, height, width, wallThickness, { isStatic: true }),
+			])
+		}
+
+		const createWorld = () => {
+			if (scene.current == null) return
+			scene.current.innerHTML = ''
+			const render = Render.create({
+				element: scene.current,
+				engine: engine.current,
+				options: {
+					width,
+					height,
+					wireframes: false,
+				},
+			})
+			createWalls()
+			Runner.run(engine.current)
+			Render.run(render)
+		}
+
+		createWorld()
 	}, [])
 
-	useEffect(() => {
+	const createSquid = useCallback(() => {
 		const squidsize = 35
 		const tentacleWidth = squidsize / 3
 		const tentacleHeight = squidsize / 2
@@ -48,8 +55,8 @@ const PhysicsRender: React.FC<{ className?: string }> = ({ className }) => {
 
 		data.avatars.forEach(({ name, isSpawned }) => {
 			if (!isSpawned) {
-				const squidStartX = 80
-				const squidStartY = 400
+				const squidStartX = 80 + Math.random() * (width - 160)
+				const squidStartY = height - 100
 				const squidScale = 0.5
 				const headScale = 0.08
 				const squidWidth = squidsize * squidScale
@@ -155,14 +162,22 @@ const PhysicsRender: React.FC<{ className?: string }> = ({ className }) => {
 					composites: [...tentacles, newSquidHead],
 				})
 
-				const force = Vector.create(0.1, -0.15)
+				const force = Vector.create(-0.1 + Math.random() * 0.2, -0.1 + Math.random() * -0.1)
 				Body.applyForce(newSquidHeadBody, newSquidHeadBody.position, force)
 				World.add(engine.current.world, newSquid)
 			}
 		})
 	}, [data.avatars])
 
+	useEffect(() => {
+		data.avatars.forEach((avatar) => {
+			if (!avatar.isSpawned) {
+				createSquid()
+			}
+		})
+	}, [data.avatars, createSquid])
+
 	return <div ref={scene} />
 }
 
-export default PhysicsRender
+export default PhysicsWorld
