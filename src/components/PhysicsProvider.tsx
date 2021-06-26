@@ -1,6 +1,7 @@
-import { Engine, World, Bodies, Render, Runner, Events, Composite, Body } from 'matter-js'
+import { Engine, World, Bodies, Render, Runner, Events } from 'matter-js'
 import React, { createContext, useContext, useCallback, useState, useRef, useEffect } from 'react'
 import type { RefObject } from 'react'
+import { useAppData } from './AppDataProvider'
 
 interface PhysicsData {
 	scene: HTMLDivElement | null
@@ -30,6 +31,7 @@ export const PhysicsProvider: React.FC = ({ children }) => {
 	const [data, setData] = useState(defaultPhysicsData)
 	const scene = useRef<HTMLDivElement>(null)
 	const engine = useRef<Engine>(Engine.create({}))
+	const { addSplash } = useAppData()
 	const width = 1000
 	const height = 600
 
@@ -85,24 +87,39 @@ export const PhysicsProvider: React.FC = ({ children }) => {
 				return false
 			})
 			floorHeadCollisions.forEach(({ bodyA, bodyB }) => {
-				if (bodyA.label === 'floor') {
-					const composite = findComposite(bodyB.label.split('-')[0])
-					if (composite) {
-						console.log(`composite:${composite}`)
-						World.remove(world, composite)
-					}
+				// if (bodyA.label === 'floor') {
+				const composite = findComposite(bodyB.label.split('-')[0])
+				if (composite) {
+					World.remove(world, composite)
+					addSplash({ name: 'splash', x: bodyB.position.x, y: bodyB.position.y })
 				}
-				if (bodyB.label === 'floor') {
+				// }
+				/* if (bodyB.label === 'floor') {
 					const composite = findComposite(bodyA.label.split('-')[0])
-					console.log(bodyA.label.split('-')[0])
 					if (composite) {
-						console.log(`composite:${composite}`)
 						World.remove(world, composite)
+						console.log('addSplash')
+						addSplash({ name: 'splash', x: bodyA.position.x, y: bodyA.position.y })
 					}
-				}
+				} */
+			})
+			const floorSplashCollisions = event.pairs.filter(({ bodyA, bodyB }) => {
+				if (bodyA.label === 'floor' && bodyB.label.indexOf('splash') === 0) return true
+				/* if (bodyB.label === 'floor' && bodyA.label.indexOf('squid') === 0) return true */
+				return false
+			})
+			floorSplashCollisions.forEach(({ bodyA, bodyB }) => {
+				// if (bodyA.label === 'floor') {
+				// const composite = findComposite(bodyB.label.split('-')[0])
+				// if (composite) {
+				console.log('slash death')
+				World.remove(world, bodyB)
+				// addSplash({ name: 'splash', x: bodyB.position.x, y: bodyB.position.y })
+				// }
+				// }
 			})
 		})
-	}, [])
+	}, [addSplash])
 
 	const update = useCallback((dataChange: Partial<PhysicsData>) => {
 		setData((currentPhysics) => {

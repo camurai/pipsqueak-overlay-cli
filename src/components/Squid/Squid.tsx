@@ -8,7 +8,7 @@ import tentaclePartImage from '../../assets/tentaclepart.png'
 
 const Squid: React.FC<{ className?: string; id: number }> = ({ className, id }) => {
 	const [isSpawned, setIsSpawned] = useState(false)
-	const [isSettled, setIsSettled] = useState(false)
+	// const [isSettled, setIsSettled] = useState(false)
 	const { width, height, engine } = usePhysics()
 
 	const createSquid = useCallback(() => {
@@ -72,7 +72,7 @@ const Squid: React.FC<{ className?: string; id: number }> = ({ className, id }) 
 			const constraint = Constraint.create({
 				bodyA,
 				bodyB,
-				stiffness: 0.3,
+				stiffness: 0.6,
 				damping: 0.5,
 				render: {
 					visible: false,
@@ -125,10 +125,13 @@ const Squid: React.FC<{ className?: string; id: number }> = ({ className, id }) 
 			label: `squid${id}`,
 		})
 
-		const force = Vector.create(-0.1 + Math.random() * 0.2, -0.1 + Math.random() * -0.1)
-		Body.applyForce(newSquidHeadBody, newSquidHeadBody.position, force)
+		let forceVector = Vector.create(0, -1)
+		forceVector = Vector.rotate(forceVector, (-45 + Math.random() * 90) * (Math.PI / 180))
+		forceVector = Vector.mult(forceVector, 0.3)
+
+		Body.applyForce(newSquidHeadBody, newSquidHeadBody.position, forceVector)
 		if (engine?.current?.world) World.add(engine.current.world, newSquid)
-	}, [engine, height, width])
+	}, [engine, height, width, id])
 
 	useEffect(() => {
 		if (isSpawned) return
