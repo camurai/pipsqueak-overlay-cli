@@ -6,11 +6,10 @@ import Squid from '../Squid'
 
 const Squids: React.FC<{ className?: string }> = ({ className }) => {
 	const { avatars } = useAppData()
-	console.log(avatars)
 	return (
 		<div data-test="Squids" className={`Squids ${className || ''}`}>
 			{avatars.map(({ id }) => (
-				<Squid key={id} />
+				<Squid key={id} id={id || 0} />
 			))}
 		</div>
 	)

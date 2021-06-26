@@ -12,7 +12,7 @@ interface AppData {
 }
 
 const defaultAppData: AppData = {
-	avatars: [{ id: 1, name: 'number one' }],
+	avatars: [],
 }
 
 export const AppDataContext = createContext<{
@@ -29,7 +29,7 @@ export const AppDataContext = createContext<{
 
 const AppDataProvider: React.FC = ({ children }) => {
 	const [data, setData] = useState(defaultAppData)
-	const [avatars, setAvatars] = useState<Avatar[]>([{ id: 1, name: 'number one' }])
+	const [avatars, setAvatars] = useState<Avatar[]>([])
 
 	const update = useCallback((dataChange: Partial<AppData>) => {
 		setData((currentData) => {
@@ -38,7 +38,6 @@ const AppDataProvider: React.FC = ({ children }) => {
 	}, [])
 
 	const addAvatar = useCallback((newAvatar: Partial<Avatar>) => {
-		console.log('Add avatar')
 		setAvatars((originalAvatars: Avatar[]) => {
 			const newFullAvatar: Avatar = {
 				name: newAvatar?.name || '',

@@ -1,4 +1,4 @@
-import { Engine, World, Bodies, Render, Runner, Events } from 'matter-js'
+import { Engine, World, Bodies, Render, Runner, Events, Composite, Body } from 'matter-js'
 import React, { createContext, useContext, useCallback, useState, useRef, useEffect } from 'react'
 import type { RefObject } from 'react'
 
@@ -45,7 +45,7 @@ export const PhysicsProvider: React.FC = ({ children }) => {
 				}),
 				Bodies.rectangle(0, height / 2, wallThickness, height, { isStatic: true }),
 				Bodies.rectangle(width, height / 2, wallThickness, height, { isStatic: true }),
-				Bodies.rectangle(width / 2, height, width, wallThickness, {
+				Bodies.rectangle(width / 2, height + 100, width, wallThickness, {
 					isStatic: true,
 					label: 'floor',
 				}),
@@ -71,15 +71,35 @@ export const PhysicsProvider: React.FC = ({ children }) => {
 
 		createWorld()
 		Events.on(engine.current, 'collisionStart', (event) => {
+			const { world } = engine.current
+
+			const findComposite = (searchLabel: string) => {
+				const composite = world.composites.find(({ label }) => {
+					return label === searchLabel
+				})
+				return composite
+			}
 			const floorHeadCollisions = event.pairs.filter(({ bodyA, bodyB }) => {
-				if (bodyA.label === 'floor' && bodyB.label === 'squid-head') return true
-				if (bodyB.label === 'floor' && bodyA.label === 'squid-head') return true
+				if (bodyA.label === 'floor' && bodyB.label.indexOf('squid') === 0) return true
+				if (bodyB.label === 'floor' && bodyA.label.indexOf('squid') === 0) return true
 				return false
 			})
 			floorHeadCollisions.forEach(({ bodyA, bodyB }) => {
-				console.log(bodyA)
-				if (bodyA.label === 'floor') World.remove(engine.current.world, bodyB.parent)
-				if (bodyB.label === 'floor') World.remove(engine.current.world, bodyA)
+				if (bodyA.label === 'floor') {
+					const composite = findComposite(bodyB.label.split('-')[0])
+					if (composite) {
+						console.log(`composite:${composite}`)
+						World.remove(world, composite)
+					}
+				}
+				if (bodyB.label === 'floor') {
+					const composite = findComposite(bodyA.label.split('-')[0])
+					console.log(bodyA.label.split('-')[0])
+					if (composite) {
+						console.log(`composite:${composite}`)
+						World.remove(world, composite)
+					}
+				}
 			})
 		})
 	}, [])

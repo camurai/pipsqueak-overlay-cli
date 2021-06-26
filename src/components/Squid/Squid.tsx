@@ -6,7 +6,7 @@ import { usePhysics } from '../PhysicsProvider'
 import squidImage from '../../assets/squidhead.png'
 import tentaclePartImage from '../../assets/tentaclepart.png'
 
-const Squid: React.FC<{ className?: string }> = ({ className }) => {
+const Squid: React.FC<{ className?: string; id: number }> = ({ className, id }) => {
 	const [isSpawned, setIsSpawned] = useState(false)
 	const [isSettled, setIsSettled] = useState(false)
 	const { width, height, engine } = usePhysics()
@@ -26,7 +26,7 @@ const Squid: React.FC<{ className?: string }> = ({ className }) => {
 		const partHeight = tentacleHeight * squidScale
 
 		const newSquidHeadBody = Bodies.circle(squidStartX, squidStartY, squidWidth, {
-			label: 'squid-head',
+			label: `squid${id}-head`,
 			restitution: 1,
 			mass: 0.5,
 			render: {
@@ -41,6 +41,7 @@ const Squid: React.FC<{ className?: string }> = ({ className }) => {
 		})
 
 		const createTentaclePart = (
+			tentacleNumber: number,
 			partNumber: number,
 			connectionPoint: Vector,
 			segments: number
@@ -60,6 +61,7 @@ const Squid: React.FC<{ className?: string }> = ({ className }) => {
 							yScale: partScale * squidScale,
 						},
 					},
+					label: `squid${id}-tentacle${tentacleNumber}-part${partNumber}`,
 					isStatic: false,
 				}
 			)
@@ -86,7 +88,7 @@ const Squid: React.FC<{ className?: string }> = ({ className }) => {
 			const tentacleParts = []
 			const tentaclePartContraints = []
 			for (let i = 0; i < segments; i++) {
-				tentacleParts.push(createTentaclePart(i, connectionPoint, segments))
+				tentacleParts.push(createTentaclePart(tentacleNumber, i, connectionPoint, segments))
 				tentaclePartContraints.push(
 					createConstraint(
 						i === 0 ? newSquidHeadBody : tentacleParts[i - 1],
@@ -98,6 +100,7 @@ const Squid: React.FC<{ className?: string }> = ({ className }) => {
 			const tentacle = Composite.create({
 				bodies: tentacleParts,
 				constraints: tentaclePartContraints,
+				label: `squid${id}-tentacle${tentacleNumber}`,
 			})
 
 			return tentacle
@@ -114,10 +117,12 @@ const Squid: React.FC<{ className?: string }> = ({ className }) => {
 
 		const newSquidHead = Composite.create({
 			bodies: [newSquidHeadBody],
+			label: `squid${id}-head`,
 		})
 
 		const newSquid = Composite.create({
 			composites: [...tentacles, newSquidHead],
+			label: `squid${id}`,
 		})
 
 		const force = Vector.create(-0.1 + Math.random() * 0.2, -0.1 + Math.random() * -0.1)
