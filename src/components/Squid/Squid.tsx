@@ -17,7 +17,7 @@ const Squid: React.FC<{ className?: string; id: number }> = ({ className, id }) 
 		const tentacleHeight = squidsize / 2
 		const partScale = 0.1
 
-		const squidStartX = 80 + Math.random() * (width - 160)
+		const squidStartX = 80 + Math.random() * (width - 480)
 		const squidStartY = height - 100
 		const squidScale = 0.5
 		const headScale = 0.08

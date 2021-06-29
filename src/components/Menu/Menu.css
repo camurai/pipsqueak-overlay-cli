@@ -1,3 +1,21 @@
+
 .Menu{
-    
+    position:absolute;
+    top:0px;
+    left:0px;
+}
+
+.Menu .window {
+    position:absolute;
+    top:0px;
+    right:10px;
+
+}
+
+
+.Menu button{
+    background-color:black;
+    color:white;
+    border-width: 1px;
+    float:right;
 }

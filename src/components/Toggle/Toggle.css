@@ -1,3 +1,21 @@
 .Toggle{
     
 }
+
+
+.Toggle .checkmark {
+    color:green;
+    float: right;
+    margin-right:5px;
+    background-color:black;
+    border-radius:5px;
+    padding-left:4px;
+    padding-right:4px;
+
+}
+
+.Toggle button {
+    float:right;
+    
+
+}

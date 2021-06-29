@@ -22,8 +22,8 @@ export const PhysicsContext = createContext<{
 	data: defaultPhysicsData,
 	scene: null,
 	engine: null,
-	width: 1000,
-	height: 600,
+	width: 1920,
+	height: 1080,
 	update: (data: Partial<PhysicsData>) => {},
 })
 
@@ -31,25 +31,44 @@ export const PhysicsProvider: React.FC = ({ children }) => {
 	const [data, setData] = useState(defaultPhysicsData)
 	const scene = useRef<HTMLDivElement>(null)
 	const engine = useRef<Engine>(Engine.create({}))
-	const { addSplash } = useAppData()
-	const width = 1000
-	const height = 600
+	const { addSplash, isGreenScreen } = useAppData()
+	const width = 1920
+	const height = 1080
 
 	useEffect(() => {
 		if (scene.current == null) return
 
 		const createWalls = () => {
-			const wallThickness = 10
+			const wallThickness = 50
 			World.add(engine.current.world, [
-				Bodies.rectangle(width / 2, 0, width, wallThickness, {
+				Bodies.rectangle(
+					width / 2,
+					0 - wallThickness / 2,
+					width + wallThickness,
+					wallThickness,
+					{
+						isStatic: true,
+						label: 'ceiling',
+					}
+				),
+				Bodies.rectangle(-wallThickness / 2, height / 2, wallThickness, height, {
 					isStatic: true,
-					label: 'ceiling',
+					label: 'left-wall',
 				}),
-				Bodies.rectangle(0, height / 2, wallThickness, height, { isStatic: true }),
-				Bodies.rectangle(width, height / 2, wallThickness, height, { isStatic: true }),
+				Bodies.rectangle(width + wallThickness / 2, height / 2, wallThickness, height, {
+					isStatic: true,
+					label: 'right-wall',
+				}),
 				Bodies.rectangle(width / 2, height + 100, width, wallThickness, {
 					isStatic: true,
 					label: 'floor',
+				}),
+				Bodies.rectangle(width - 275, height - 245, 410, 360, {
+					isStatic: true,
+					label: 'chatwindow',
+					render: {
+						visible: false,
+					},
 				}),
 			])
 		}
@@ -112,7 +131,6 @@ export const PhysicsProvider: React.FC = ({ children }) => {
 				// if (bodyA.label === 'floor') {
 				// const composite = findComposite(bodyB.label.split('-')[0])
 				// if (composite) {
-				console.log('slash death')
 				World.remove(world, bodyB)
 				// addSplash({ name: 'splash', x: bodyB.position.x, y: bodyB.position.y })
 				// }
@@ -129,7 +147,7 @@ export const PhysicsProvider: React.FC = ({ children }) => {
 
 	return (
 		<PhysicsContext.Provider value={{ data, scene, engine, width, height, update }}>
-			<div className="scene" ref={scene} />
+			<div className={`scene ${isGreenScreen ? 'greenscreen' : ''}`} ref={scene} />
 			{children}
 		</PhysicsContext.Provider>
 	)
