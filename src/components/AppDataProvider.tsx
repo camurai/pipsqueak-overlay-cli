@@ -107,7 +107,7 @@ const AppDataProvider: React.FC = ({ children }) => {
 
 	useEffect(() => {
 		const createApplicationConnection = () => {
-			const socket = io('http://localhost:3030')
+			const socket = io('https://pipsqueak-overlay.herokuapp.com/')
 			app.current = feathers()
 			app.current.configure(feathers.socketio(socket))
 			app.current.configure(feathers.authentication())
