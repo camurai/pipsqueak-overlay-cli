@@ -15,10 +15,24 @@ const Firework: React.FC<{ className?: string; id?: number; x?: number; y?: numb
 
 	const create = useCallback(() => {
 		const start = Vector.create(x, y)
-		const red = 100 + Math.round(Math.random() * 155)
-		const green = 100 + Math.round(Math.random() * 155)
-		const blue = 100 + Math.round(Math.random() * 155)
-		const color = `#${red.toString(16)}${green.toString(16)}${blue.toString(16)}FF`
+		const colorMin = 100
+		const colorMax = 255
+		const brightnessValue = '55'
+		const colors = [
+			`#ff${brightnessValue}${brightnessValue}ff`,
+			`#${brightnessValue}${brightnessValue}ffff`,
+			`#ff${brightnessValue}ffff`,
+			`#ffffffff`,
+		]
+		const color = colors[Math.floor(Math.random() * colors.length)]
+		// const color = colors[3]
+
+		// const red = colorMin + Math.round(Math.random() * (colorMax - colorMin))
+		// const green = colorMin + Math.round(Math.random() * (colorMax - colorMin))
+		// const blue = colorMin + Math.round(Math.random() * (colorMax - colorMin))
+		// const color = `#${red.toString(16)}${green.toString(16)}${blue.toString(16)}FF`
+		const minSize = 1
+		const maxSize = 3
 
 		const createParticle = (objectId: number) => {
 			let forceVector = Vector.create(0, -1)
@@ -27,21 +41,27 @@ const Firework: React.FC<{ className?: string; id?: number; x?: number; y?: numb
 			const forceMax = 0.0001
 			forceVector = Vector.mult(forceVector, forceMin + Math.random() * (forceMax - forceMin))
 
-			const newParticle = Bodies.circle(start.x, start.y, 1 + Math.random() * 5, {
-				label: `firework${id}-particle${objectId}`,
-				restitution: 0,
-				mass: 0.002,
-				render: {
-					fillStyle: color,
-				},
-				isStatic: false,
-			})
+			const newParticle = Bodies.circle(
+				start.x,
+				start.y,
+				minSize + Math.random() * (maxSize - minSize),
+				{
+					label: `firework${id}-particle${objectId}`,
+					restitution: 0,
+					mass: 0.002,
+					render: {
+						fillStyle: color,
+					},
+					isStatic: false,
+				}
+			)
 			Body.applyForce(newParticle, start, forceVector)
+
 			if (engine?.current?.world) World.add(engine.current.world, newParticle)
 			const fadeParticle = (time: number) => {
 				const pcolor = newParticle.render.fillStyle?.substring(0, 7)
 				const alpha =
-					parseInt(`${newParticle.render.fillStyle?.substring(7, 9)}` || '', 16) - 5
+					parseInt(`${newParticle.render.fillStyle?.substring(7, 9)}` || '', 16) - 4
 				if (alpha < 20) {
 					if (engine?.current?.world) World.remove(engine.current.world, newParticle)
 				} else {
@@ -56,7 +76,7 @@ const Firework: React.FC<{ className?: string; id?: number; x?: number; y?: numb
 			requestAnimationFrame(fadeParticle)
 		}
 
-		for (let i = 0; i < 100; i++) {
+		for (let i = 0; i < 240; i++) {
 			createParticle(i)
 		}
 	}, [engine, id, x, y])
