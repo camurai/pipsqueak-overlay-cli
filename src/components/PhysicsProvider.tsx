@@ -106,35 +106,26 @@ export const PhysicsProvider: React.FC = ({ children }) => {
 				return false
 			})
 			floorHeadCollisions.forEach(({ bodyA, bodyB }) => {
-				// if (bodyA.label === 'floor') {
 				const composite = findComposite(bodyB.label.split('-')[0])
 				if (composite) {
 					World.remove(world, composite)
 					addSplash({ name: 'splash', x: bodyB.position.x, y: bodyB.position.y })
 				}
-				// }
-				/* if (bodyB.label === 'floor') {
-					const composite = findComposite(bodyA.label.split('-')[0])
-					if (composite) {
-						World.remove(world, composite)
-						console.log('addSplash')
-						addSplash({ name: 'splash', x: bodyA.position.x, y: bodyA.position.y })
-					}
-				} */
 			})
-			const floorSplashCollisions = event.pairs.filter(({ bodyA, bodyB }) => {
-				if (bodyA.label === 'floor' && bodyB.label.indexOf('splash') === 0) return true
-				/* if (bodyB.label === 'floor' && bodyA.label.indexOf('squid') === 0) return true */
+			const floorParticleCollisions = event.pairs.filter(({ bodyA, bodyB }) => {
+				const particleLabels = ['splash', 'firework']
+				const checkForLabel = (ids: string[], label: string) => {
+					const idsFound = ids.filter((value) => {
+						return label.indexOf(value) === 0
+					})
+					return idsFound.length > 0
+				}
+				if (bodyA.label === 'floor' && checkForLabel(particleLabels, bodyB.label))
+					return true
 				return false
 			})
-			floorSplashCollisions.forEach(({ bodyA, bodyB }) => {
-				// if (bodyA.label === 'floor') {
-				// const composite = findComposite(bodyB.label.split('-')[0])
-				// if (composite) {
+			floorParticleCollisions.forEach(({ bodyA, bodyB }) => {
 				World.remove(world, bodyB)
-				// addSplash({ name: 'splash', x: bodyB.position.x, y: bodyB.position.y })
-				// }
-				// }
 			})
 		})
 	}, [addSplash])

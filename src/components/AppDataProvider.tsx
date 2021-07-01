@@ -36,20 +36,24 @@ export const AppDataContext = createContext<{
 	data: AppData
 	avatars: Avatar[]
 	splashs: Avatar[]
+	fireworks: Avatar[]
 	isGreenScreen: boolean
 	update: (dataChange: Partial<AppData>) => void
 	addAvatar: (newAvatar: Partial<Avatar>) => void
 	addSplash: (newSplash: Partial<Avatar>) => void
+	addFirework: (newFirework: Partial<Avatar>) => void
 	setOptions: (eventOptions: EventOptions) => void
 	setIsGreenScreen?: Dispatch<SetStateAction<boolean>>
 }>({
 	data: defaultAppData,
 	avatars: [],
 	splashs: [],
+	fireworks: [],
 	isGreenScreen: true,
 	update: (dataChange: Partial<AppData>) => {},
 	addAvatar: (newAvatar: Partial<Avatar>) => {},
 	addSplash: (newSplash: Partial<Avatar>) => {},
+	addFirework: (newFirework: Partial<Avatar>) => {},
 	setOptions: (eventOption: EventOptions) => {},
 })
 
@@ -57,6 +61,7 @@ const AppDataProvider: React.FC = ({ children }) => {
 	const [data, setData] = useState(defaultAppData)
 	const [avatars, setAvatars] = useState<Avatar[]>([])
 	const [splashs, setSplashs] = useState<Avatar[]>([])
+	const [fireworks, setFireworks] = useState<Avatar[]>([])
 	const [isGreenScreen, setIsGreenScreen] = useState(true)
 
 	const [avatarOnFollow, setAvatarOnFollow] = useState(true)
@@ -93,6 +98,19 @@ const AppDataProvider: React.FC = ({ children }) => {
 				y: newSplash.y,
 			}
 			return [...originalSplashs, newFullSplash]
+		})
+	}, [])
+
+	const addFirework = useCallback((newFirework: Partial<Avatar>) => {
+		setFireworks((originalFireworks: Avatar[]) => {
+			const newFullFirework: Avatar = {
+				name: newFirework?.name || '',
+				isSpawned: true,
+				id: originalFireworks.length,
+				x: newFirework.x,
+				y: newFirework.y,
+			}
+			return [...originalFireworks, newFullFirework]
 		})
 	}, [])
 
@@ -142,10 +160,12 @@ const AppDataProvider: React.FC = ({ children }) => {
 				data,
 				avatars,
 				splashs,
+				fireworks,
 				isGreenScreen,
 				update,
 				addAvatar,
 				addSplash,
+				addFirework,
 				setOptions,
 				setIsGreenScreen,
 			}}
