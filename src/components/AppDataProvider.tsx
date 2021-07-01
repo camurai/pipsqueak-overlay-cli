@@ -107,11 +107,10 @@ const AppDataProvider: React.FC = ({ children }) => {
 
 	useEffect(() => {
 		const createApplicationConnection = () => {
-			const socket = io('https://pipsqueak-overlay.herokuapp.com/')
+			const socket = io(process.env.REACT_APP_SERVER_URL || 'http://localhost:3030')
 			app.current = feathers()
 			app.current.configure(feathers.socketio(socket))
 			app.current.configure(feathers.authentication())
-			console.log('connection started')
 		}
 		createApplicationConnection()
 	}, [])
@@ -121,8 +120,6 @@ const AppDataProvider: React.FC = ({ children }) => {
 			addAvatar({ name })
 		}
 		if (app.current) {
-			console.log(`avatarOnFollow:${avatarOnFollow}`)
-			if (avatarOnFollow) console.log('added follow')
 			app.current.service('twitch-event-sub').on('follow', onEventAddAvatar)
 			if (avatarOnSubscribe)
 				app.current.service('twitch-event-sub').on('subscribe', onEventAddAvatar)
@@ -130,7 +127,6 @@ const AppDataProvider: React.FC = ({ children }) => {
 		}
 		return () => {
 			if (app.current) {
-				console.log('removedfollow')
 				app.current.service('twitch-event-sub').removeListener('follow', onEventAddAvatar)
 				app.current
 					.service('twitch-event-sub')
