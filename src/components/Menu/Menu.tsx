@@ -30,12 +30,14 @@ const Menu: React.FC<{ className?: string }> = ({ className }) => {
 		addAvatar({ name: 'another one', force: 3 })
 	}, [addAvatar])
 	const spawnFirework = useCallback(() => {
-		addFirework({
-			name: 'another firework',
-			x: Math.round(width * Math.random()),
-			y: Math.round(Math.random() * (height - 300)),
-		})
-	}, [addFirework, width, height])
+		if (checkOverfill()) setTimeout(spawnFirework, 1000)
+		else
+			addFirework({
+				name: 'another firework',
+				x: Math.round(width * Math.random()),
+				y: Math.round(Math.random() * (height - 300)),
+			})
+	}, [addFirework, checkOverfill, width, height])
 
 	const toggleGreenScreen = useCallback(
 		(value) => {
