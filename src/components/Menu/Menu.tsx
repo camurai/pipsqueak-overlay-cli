@@ -74,8 +74,8 @@ const Menu: React.FC<{ className?: string }> = ({ className }) => {
 				<button type="button" onClick={cleanup}>
 					Cleanup
 				</button>
-				<Toggle text="Green Screen" onToggle={toggleGreenScreen} startValue={false} />
-				<Toggle text="Space Mode" onToggle={toggleSpaceMode} />
+				<Toggle text="Green Screen" onToggle={toggleGreenScreen} />
+				<Toggle text="Space Mode" onToggle={toggleSpaceMode} startValue={false} />
 			</div>
 		</div>
 	)
