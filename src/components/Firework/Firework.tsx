@@ -15,8 +15,6 @@ const Firework: React.FC<{ className?: string; id?: number; x?: number; y?: numb
 
 	const create = useCallback(() => {
 		const start = Vector.create(x, y)
-		const colorMin = 100
-		const colorMax = 255
 		const brightnessValue = '55'
 		const colors = [
 			`#ff${brightnessValue}${brightnessValue}ff`,
@@ -25,12 +23,6 @@ const Firework: React.FC<{ className?: string; id?: number; x?: number; y?: numb
 			`#ffffffff`,
 		]
 		const color = colors[Math.floor(Math.random() * colors.length)]
-		// const color = colors[3]
-
-		// const red = colorMin + Math.round(Math.random() * (colorMax - colorMin))
-		// const green = colorMin + Math.round(Math.random() * (colorMax - colorMin))
-		// const blue = colorMin + Math.round(Math.random() * (colorMax - colorMin))
-		// const color = `#${red.toString(16)}${green.toString(16)}${blue.toString(16)}FF`
 		const minSize = 1
 		const maxSize = 3
 

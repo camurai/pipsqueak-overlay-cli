@@ -18,6 +18,7 @@ interface Avatar {
 	isSpawned?: boolean
 	x?: number
 	y?: number
+	force?: number
 }
 interface EventOptions {
 	onFollow: boolean
@@ -80,9 +81,12 @@ const AppDataProvider: React.FC = ({ children }) => {
 	const addAvatar = useCallback((newAvatar: Partial<Avatar>) => {
 		setAvatars((originalAvatars: Avatar[]) => {
 			const newFullAvatar: Avatar = {
-				name: newAvatar?.name || '',
-				isSpawned: true,
-				id: originalAvatars.length,
+				...newAvatar,
+				...{
+					name: newAvatar?.name || '',
+					isSpawned: true,
+					id: originalAvatars.length,
+				},
 			}
 			return [...originalAvatars, newFullAvatar]
 		})

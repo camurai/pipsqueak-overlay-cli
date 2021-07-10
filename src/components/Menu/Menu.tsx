@@ -7,10 +7,13 @@ import Toggle from '../Toggle'
 
 const Menu: React.FC<{ className?: string }> = ({ className }) => {
 	const { addAvatar, addFirework, setIsGreenScreen } = useAppData()
-	const { width, height } = usePhysics()
+	const { width, height, cleanup } = usePhysics()
 
 	const spawnSquid = useCallback(() => {
 		addAvatar({ name: 'another one' })
+	}, [addAvatar])
+	const spawnCeilingSquid = useCallback(() => {
+		addAvatar({ name: 'another one', force: 3 })
 	}, [addAvatar])
 	const spawnFirework = useCallback(() => {
 		addFirework({
@@ -31,10 +34,16 @@ const Menu: React.FC<{ className?: string }> = ({ className }) => {
 		<div data-test="Menu" className={`Menu ${className || ''}`} style={{ width, height }}>
 			<div className="window">
 				<button type="button" onClick={spawnSquid}>
-					Spawn Squid
+					Squid
+				</button>
+				<button type="button" onClick={spawnCeilingSquid}>
+					Ceiling Squid
 				</button>
 				<button type="button" onClick={spawnFirework}>
 					Spawn Firework
+				</button>
+				<button type="button" onClick={cleanup}>
+					Clear Frame
 				</button>
 				<Toggle text="Green Screen" onToggle={toggleGreenScreen} />
 			</div>

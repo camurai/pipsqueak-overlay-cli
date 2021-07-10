@@ -41,6 +41,18 @@ const Splash: React.FC<{ className?: string; id?: number; x?: number; y?: number
 			)
 			Body.applyForce(newSplashParticle, splashStart, forceVector)
 			if (engine?.current?.world) World.add(engine.current.world, newSplashParticle)
+
+			const killParticle = (time: number) => {
+				if (!engine?.current) return
+				if (!engine.current.world.bodies.includes(newSplashParticle)) return
+
+				if (newSplashParticle.position.y > y + 100) {
+					World.remove(engine.current.world, newSplashParticle)
+				} else {
+					requestAnimationFrame(killParticle)
+				}
+			}
+			requestAnimationFrame(killParticle)
 		}
 
 		for (let i = 0; i < 100; i++) {

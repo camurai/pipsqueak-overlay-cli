@@ -1,4 +1,4 @@
-import { Engine, World, Bodies, Render, Runner, Events } from 'matter-js'
+import { Engine, World, Bodies, Render, Runner, Events, Body } from 'matter-js'
 import React, { createContext, useContext, useCallback, useState, useRef, useEffect } from 'react'
 import type { RefObject } from 'react'
 import { useAppData } from './AppDataProvider'
@@ -17,6 +17,7 @@ export const PhysicsContext = createContext<{
 	engine: RefObject<Engine> | null
 	width: number
 	height: number
+	cleanup: () => void
 	update: (data: Partial<PhysicsData>) => void
 }>({
 	data: defaultPhysicsData,
@@ -24,6 +25,7 @@ export const PhysicsContext = createContext<{
 	engine: null,
 	width: 1920,
 	height: 1080,
+	cleanup: () => {},
 	update: (data: Partial<PhysicsData>) => {},
 })
 
@@ -34,23 +36,30 @@ export const PhysicsProvider: React.FC = ({ children }) => {
 	const { addSplash, isGreenScreen } = useAppData()
 	const width = 1920
 	const height = 1080
+	const wallThickness = 50
+
+	const [chatWindow] = useState(
+		Bodies.rectangle(width - 275, height - 245, 410, 360, {
+			isStatic: true,
+			label: 'chatwindow',
+			render: {
+				visible: false,
+			},
+		})
+	)
+	const [ceiling] = useState(
+		Bodies.rectangle(width / 2, 0 - wallThickness / 2, width + wallThickness, wallThickness, {
+			isStatic: true,
+			label: 'ceiling',
+		})
+	)
 
 	useEffect(() => {
 		if (scene.current == null) return
 
 		const createWalls = () => {
-			const wallThickness = 50
 			World.add(engine.current.world, [
-				Bodies.rectangle(
-					width / 2,
-					0 - wallThickness / 2,
-					width + wallThickness,
-					wallThickness,
-					{
-						isStatic: true,
-						label: 'ceiling',
-					}
-				),
+				ceiling,
 				Bodies.rectangle(-wallThickness / 2, height / 2, wallThickness, height, {
 					isStatic: true,
 					label: 'left-wall',
@@ -63,13 +72,7 @@ export const PhysicsProvider: React.FC = ({ children }) => {
 					isStatic: true,
 					label: 'floor',
 				}),
-				Bodies.rectangle(width - 275, height - 245, 410, 360, {
-					isStatic: true,
-					label: 'chatwindow',
-					render: {
-						visible: false,
-					},
-				}),
+				chatWindow,
 			])
 		}
 
@@ -86,8 +89,16 @@ export const PhysicsProvider: React.FC = ({ children }) => {
 				},
 			})
 			createWalls()
-			Runner.run(engine.current)
 			Render.run(render)
+
+			const framerate = 60
+			const updateTime = 1000 / framerate
+			engine.current.timing.timeScale = 1
+
+			const frameUpdate = () => {
+				Engine.update(engine.current, updateTime)
+			}
+			setInterval(frameUpdate, updateTime)
 		}
 
 		createWorld()
@@ -136,8 +147,17 @@ export const PhysicsProvider: React.FC = ({ children }) => {
 		})
 	}, [])
 
+	const cleanup = useCallback(() => {
+		World.remove(engine.current.world, chatWindow)
+		World.remove(engine.current.world, ceiling)
+		setTimeout(() => {
+			World.add(engine.current.world, chatWindow)
+			World.add(engine.current.world, ceiling)
+		}, 2000)
+	}, [chatWindow])
+
 	return (
-		<PhysicsContext.Provider value={{ data, scene, engine, width, height, update }}>
+		<PhysicsContext.Provider value={{ data, scene, engine, width, height, cleanup, update }}>
 			<div className={`scene ${isGreenScreen ? 'greenscreen' : ''}`} ref={scene} />
 			{children}
 		</PhysicsContext.Provider>

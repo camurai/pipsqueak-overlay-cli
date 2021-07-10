@@ -6,7 +6,11 @@ import { usePhysics } from '../PhysicsProvider'
 import squidImage from '../../assets/squidhead.png'
 import tentaclePartImage from '../../assets/tentaclepart.png'
 
-const Squid: React.FC<{ className?: string; id: number }> = ({ className, id }) => {
+const Squid: React.FC<{ className?: string; id: number; force?: number }> = ({
+	className,
+	id,
+	force = 1,
+}) => {
 	const [isSpawned, setIsSpawned] = useState(false)
 	// const [isSettled, setIsSettled] = useState(false)
 	const { width, height, engine } = usePhysics()
@@ -127,11 +131,11 @@ const Squid: React.FC<{ className?: string; id: number }> = ({ className, id }) 
 
 		let forceVector = Vector.create(0, -1)
 		forceVector = Vector.rotate(forceVector, (-45 + Math.random() * 90) * (Math.PI / 180))
-		forceVector = Vector.mult(forceVector, 0.3)
+		forceVector = Vector.mult(forceVector, 0.3 * force)
 
 		Body.applyForce(newSquidHeadBody, newSquidHeadBody.position, forceVector)
 		if (engine?.current?.world) World.add(engine.current.world, newSquid)
-	}, [engine, height, width, id])
+	}, [engine, height, width, id, force])
 
 	useEffect(() => {
 		if (isSpawned) return
