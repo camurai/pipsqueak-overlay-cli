@@ -1,17 +1,31 @@
 import './Menu.css'
 
-import React, { useCallback } from 'react'
+import React, { useCallback, useState } from 'react'
+import { Composite } from 'matter-js'
 import { useAppData } from '../AppDataProvider'
 import { usePhysics } from '../PhysicsProvider'
 import Toggle from '../Toggle'
 
 const Menu: React.FC<{ className?: string }> = ({ className }) => {
 	const { addAvatar, addFirework, setIsGreenScreen } = useAppData()
-	const { width, height, cleanup } = usePhysics()
+	const { width, height, cleanup, engine } = usePhysics()
+	const [isGravityOn, setIsGravityOn] = useState(true)
+
+	const checkOverfill = useCallback(() => {
+		if (engine?.current?.world) {
+			const allBodies = Composite.allBodies(engine.current.world)
+			if (allBodies.length > 630) return true
+		}
+		return false
+	}, [engine])
 
 	const spawnSquid = useCallback(() => {
-		addAvatar({ name: 'another one' })
-	}, [addAvatar])
+		let force = 1
+		if (!isGravityOn) force = 0.5
+		if (checkOverfill()) setTimeout(spawnSquid, 1000)
+		else addAvatar({ name: 'another one', force })
+	}, [addAvatar, checkOverfill, isGravityOn])
+
 	const spawnCeilingSquid = useCallback(() => {
 		addAvatar({ name: 'another one', force: 3 })
 	}, [addAvatar])
@@ -30,6 +44,19 @@ const Menu: React.FC<{ className?: string }> = ({ className }) => {
 		[setIsGreenScreen]
 	)
 
+	const toggleSpaceMode = useCallback(
+		(value) => {
+			if (engine?.current) {
+				setIsGravityOn((oldIsGravityOn) => {
+					return !oldIsGravityOn
+				})
+				if (engine.current.gravity.scale === 0.001) engine.current.gravity.scale = 0.00005
+				else engine.current.gravity.scale = 0.001
+			}
+		},
+		[engine]
+	)
+
 	return (
 		<div data-test="Menu" className={`Menu ${className || ''}`} style={{ width, height }}>
 			<div className="window">
@@ -43,9 +70,10 @@ const Menu: React.FC<{ className?: string }> = ({ className }) => {
 					Spawn Firework
 				</button>
 				<button type="button" onClick={cleanup}>
-					Clear Frame
+					Cleanup
 				</button>
-				<Toggle text="Green Screen" onToggle={toggleGreenScreen} />
+				<Toggle text="Green Screen" onToggle={toggleGreenScreen} startValue={false} />
+				<Toggle text="Space Mode" onToggle={toggleSpaceMode} />
 			</div>
 		</div>
 	)

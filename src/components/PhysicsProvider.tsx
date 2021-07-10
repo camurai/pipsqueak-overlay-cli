@@ -1,4 +1,4 @@
-import { Engine, World, Bodies, Render, Runner, Events, Body } from 'matter-js'
+import { Engine, Bodies, Render, Events, Composite } from 'matter-js'
 import React, { createContext, useContext, useCallback, useState, useRef, useEffect } from 'react'
 import type { RefObject } from 'react'
 import { useAppData } from './AppDataProvider'
@@ -6,6 +6,8 @@ import { useAppData } from './AppDataProvider'
 interface PhysicsData {
 	scene: HTMLDivElement | null
 }
+
+// interface BodyOrConstraintArray extends{}
 
 const defaultPhysicsData: PhysicsData = {
 	scene: null,
@@ -33,10 +35,26 @@ export const PhysicsProvider: React.FC = ({ children }) => {
 	const [data, setData] = useState(defaultPhysicsData)
 	const scene = useRef<HTMLDivElement>(null)
 	const engine = useRef<Engine>(Engine.create({}))
-	const { addSplash, isGreenScreen } = useAppData()
+	const {
+		splashs,
+		addSplash,
+		avatars,
+		removeAvatar,
+		removeSplash,
+		fireworks,
+		removeFirework,
+		isGreenScreen,
+	} = useAppData()
 	const width = 1920
 	const height = 1080
 	const wallThickness = 50
+	const fireworksRef = useRef(fireworks)
+	const splashsRef = useRef(splashs)
+	const avatarsRef = useRef(avatars)
+
+	fireworksRef.current = fireworks
+	splashsRef.current = splashs
+	avatarsRef.current = avatars
 
 	const [chatWindow] = useState(
 		Bodies.rectangle(width - 275, height - 245, 410, 360, {
@@ -57,23 +75,32 @@ export const PhysicsProvider: React.FC = ({ children }) => {
 	useEffect(() => {
 		if (scene.current == null) return
 
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const wallleft = Bodies.rectangle(-wallThickness / 2, height / 2, wallThickness, height, {
+			isStatic: true,
+			label: 'left-wall',
+		})
+		const wallright = Bodies.rectangle(
+			width + wallThickness / 2,
+			height / 2,
+			wallThickness,
+			height,
+			{
+				isStatic: true,
+				label: 'right-wall',
+			}
+		)
+		const floor = Bodies.rectangle(width / 2, height + 100, width, wallThickness, {
+			isStatic: true,
+			label: 'floor',
+		})
+
 		const createWalls = () => {
-			World.add(engine.current.world, [
-				ceiling,
-				Bodies.rectangle(-wallThickness / 2, height / 2, wallThickness, height, {
-					isStatic: true,
-					label: 'left-wall',
-				}),
-				Bodies.rectangle(width + wallThickness / 2, height / 2, wallThickness, height, {
-					isStatic: true,
-					label: 'right-wall',
-				}),
-				Bodies.rectangle(width / 2, height + 100, width, wallThickness, {
-					isStatic: true,
-					label: 'floor',
-				}),
-				chatWindow,
-			])
+			Composite.add(engine.current.world, wallleft)
+			Composite.add(engine.current.world, wallright)
+			Composite.add(engine.current.world, floor)
+			Composite.add(engine.current.world, ceiling)
+			Composite.add(engine.current.world, chatWindow)
 		}
 
 		const createWorld = () => {
@@ -96,6 +123,48 @@ export const PhysicsProvider: React.FC = ({ children }) => {
 			engine.current.timing.timeScale = 1
 
 			const frameUpdate = () => {
+				const allBodies = Composite.allBodies(engine.current.world)
+				const maxBodies = 700
+				if (allBodies.length > maxBodies) {
+					let removeTotal = allBodies.length - maxBodies
+					allBodies.forEach((body) => {
+						if (removeTotal > 0 && body.label.indexOf('particle') > 0) {
+							Composite.remove(engine.current.world, body, true)
+							removeTotal -= 1
+						}
+					})
+					if (allBodies.length > maxBodies) {
+						const allComposites = Composite.allComposites(engine.current.world)
+						allComposites.forEach((composite) => {
+							if (
+								removeTotal > 0 &&
+								composite.label.indexOf('squid') >= 0 &&
+								composite.label.indexOf('tentacle') < 0
+							) {
+								Composite.remove(engine.current.world, composite, true)
+								removeTotal -= 70
+							}
+						})
+					}
+				}
+				avatarsRef.current.forEach(({ id }) => {
+					const foundBodies = allBodies.filter(({ label }) => {
+						return label.indexOf(`squid${id}`) >= 0
+					})
+					if (foundBodies.length === 0 && id !== undefined) removeAvatar(id)
+				})
+				splashsRef.current.forEach(({ id }) => {
+					const foundBodies = allBodies.filter(({ label }) => {
+						return label.indexOf(`splash${id}`) >= 0
+					})
+					if (foundBodies.length === 0 && id !== undefined) removeSplash(id)
+				})
+				fireworksRef.current.forEach(({ id }) => {
+					const foundBodies = allBodies.filter(({ label }) => {
+						return label.indexOf(`firework${id}`) >= 0
+					})
+					if (foundBodies.length === 0 && id !== undefined) removeFirework(id)
+				})
 				Engine.update(engine.current, updateTime)
 			}
 			setInterval(frameUpdate, updateTime)
@@ -119,7 +188,9 @@ export const PhysicsProvider: React.FC = ({ children }) => {
 			floorHeadCollisions.forEach(({ bodyA, bodyB }) => {
 				const composite = findComposite(bodyB.label.split('-')[0])
 				if (composite) {
-					World.remove(world, composite)
+					Composite.remove(world, composite)
+
+					removeAvatar(parseInt(composite.label.substring(5), 10))
 					addSplash({ name: 'splash', x: bodyB.position.x, y: bodyB.position.y })
 				}
 			})
@@ -135,11 +206,25 @@ export const PhysicsProvider: React.FC = ({ children }) => {
 					return true
 				return false
 			})
+
 			floorParticleCollisions.forEach(({ bodyA, bodyB }) => {
-				World.remove(world, bodyB)
+				Composite.remove(world, bodyB)
+				const [compositeId] = bodyB.label.split('-')
+
+				const allBodies = Composite.allBodies(world)
+				let bodyCount = 0
+				allBodies.forEach(({ label }) => {
+					if (label.indexOf(compositeId) >= 0) bodyCount += 1
+				})
+				if (bodyCount === 0) {
+					if (compositeId.indexOf('splash') === 0)
+						removeSplash(parseInt(compositeId.substring(6), 10))
+					if (compositeId.indexOf('firework') === 0)
+						removeFirework(parseInt(compositeId.substring(8), 10))
+				}
 			})
 		})
-	}, [addSplash])
+	}, [addSplash, removeSplash, removeFirework, removeAvatar, ceiling, chatWindow])
 
 	const update = useCallback((dataChange: Partial<PhysicsData>) => {
 		setData((currentPhysics) => {
@@ -148,13 +233,13 @@ export const PhysicsProvider: React.FC = ({ children }) => {
 	}, [])
 
 	const cleanup = useCallback(() => {
-		World.remove(engine.current.world, chatWindow)
-		World.remove(engine.current.world, ceiling)
+		Composite.remove(engine.current.world, chatWindow)
+		Composite.remove(engine.current.world, ceiling)
 		setTimeout(() => {
-			World.add(engine.current.world, chatWindow)
-			World.add(engine.current.world, ceiling)
+			Composite.add(engine.current.world, chatWindow)
+			Composite.add(engine.current.world, ceiling)
 		}, 2000)
-	}, [chatWindow])
+	}, [chatWindow, ceiling])
 
 	return (
 		<PhysicsContext.Provider value={{ data, scene, engine, width, height, cleanup, update }}>

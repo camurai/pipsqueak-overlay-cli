@@ -41,8 +41,11 @@ export const AppDataContext = createContext<{
 	isGreenScreen: boolean
 	update: (dataChange: Partial<AppData>) => void
 	addAvatar: (newAvatar: Partial<Avatar>) => void
+	removeAvatar: (id: number) => void
 	addSplash: (newSplash: Partial<Avatar>) => void
+	removeSplash: (id: number) => void
 	addFirework: (newFirework: Partial<Avatar>) => void
+	removeFirework: (id: number) => void
 	setOptions: (eventOptions: EventOptions) => void
 	setIsGreenScreen?: Dispatch<SetStateAction<boolean>>
 }>({
@@ -53,8 +56,11 @@ export const AppDataContext = createContext<{
 	isGreenScreen: true,
 	update: (dataChange: Partial<AppData>) => {},
 	addAvatar: (newAvatar: Partial<Avatar>) => {},
+	removeAvatar: (id: number) => {},
 	addSplash: (newSplash: Partial<Avatar>) => {},
+	removeSplash: (id: number) => {},
 	addFirework: (newFirework: Partial<Avatar>) => {},
+	removeFirework: (id: number) => {},
 	setOptions: (eventOption: EventOptions) => {},
 })
 
@@ -68,6 +74,10 @@ const AppDataProvider: React.FC = ({ children }) => {
 	const [avatarOnFollow, setAvatarOnFollow] = useState(true)
 	const [avatarOnSubscribe, setAvatarOnSubscribe] = useState(true)
 	const [avatarOnCheer, setAvatarOnCheer] = useState(true)
+
+	const avatarCount = useRef(0)
+	const splashCount = useRef(0)
+	const fireworkCount = useRef(0)
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const app = useRef<createApplication.Application<any>>()
@@ -85,10 +95,19 @@ const AppDataProvider: React.FC = ({ children }) => {
 				...{
 					name: newAvatar?.name || '',
 					isSpawned: true,
-					id: originalAvatars.length,
+					id: (avatarCount.current += 1),
 				},
 			}
 			return [...originalAvatars, newFullAvatar]
+		})
+	}, [])
+
+	const removeAvatar = useCallback((id) => {
+		setAvatars((originalAvatars: Avatar[]) => {
+			return originalAvatars.filter((avatar) => {
+				if (id !== avatar.id) return true
+				return false
+			})
 		})
 	}, [])
 
@@ -97,11 +116,20 @@ const AppDataProvider: React.FC = ({ children }) => {
 			const newFullSplash: Avatar = {
 				name: newSplash?.name || '',
 				isSpawned: true,
-				id: originalSplashs.length,
+				id: (splashCount.current += 1),
 				x: newSplash.x,
 				y: newSplash.y,
 			}
 			return [...originalSplashs, newFullSplash]
+		})
+	}, [])
+
+	const removeSplash = useCallback((id) => {
+		setSplashs((originalSplashs: Avatar[]) => {
+			return originalSplashs.filter((splash) => {
+				if (id !== splash.id) return true
+				return false
+			})
 		})
 	}, [])
 
@@ -110,11 +138,20 @@ const AppDataProvider: React.FC = ({ children }) => {
 			const newFullFirework: Avatar = {
 				name: newFirework?.name || '',
 				isSpawned: true,
-				id: originalFireworks.length,
+				id: (fireworkCount.current += 1),
 				x: newFirework.x,
 				y: newFirework.y,
 			}
 			return [...originalFireworks, newFullFirework]
+		})
+	}, [])
+
+	const removeFirework = useCallback((id) => {
+		setFireworks((originalFireworks: Avatar[]) => {
+			return originalFireworks.filter((firework) => {
+				if (id !== firework.id) return true
+				return false
+			})
 		})
 	}, [])
 
@@ -168,8 +205,11 @@ const AppDataProvider: React.FC = ({ children }) => {
 				isGreenScreen,
 				update,
 				addAvatar,
+				removeAvatar,
 				addSplash,
+				removeSplash,
 				addFirework,
+				removeFirework,
 				setOptions,
 				setIsGreenScreen,
 			}}

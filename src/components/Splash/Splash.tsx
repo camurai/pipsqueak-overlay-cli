@@ -66,7 +66,7 @@ const Splash: React.FC<{ className?: string; id?: number; x?: number; y?: number
 		setIsSpawned(true)
 	}, [isSpawned, createSplash])
 
-	return <div data-test="Splash" className={`Splash ${className || ''}`} />
+	return <div data-test={`Splash${id}`} className={`Splash ${className || ''}`} />
 }
 
 export default Splash
