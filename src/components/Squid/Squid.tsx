@@ -6,11 +6,16 @@ import { usePhysics } from '../PhysicsProvider'
 import squidImage from '../../assets/squidhead.png'
 import tentaclePartImage from '../../assets/tentaclepart.png'
 
-const Squid: React.FC<{ className?: string; id: number; force?: number }> = ({
-	className,
-	id,
-	force = 1,
-}) => {
+const Squid: React.FC<{
+	className?: string
+	id: number
+	force?: number
+	spawnX?: number
+	spawnY?: number
+	vectorX?: number
+	vectorY?: number
+	torque?: number
+}> = ({ className, id, force = 1, spawnX, spawnY, vectorX, vectorY, torque }) => {
 	const [isSpawned, setIsSpawned] = useState(false)
 	// const [isSettled, setIsSettled] = useState(false)
 	const { width, height, engine } = usePhysics()
@@ -21,8 +26,10 @@ const Squid: React.FC<{ className?: string; id: number; force?: number }> = ({
 		const tentacleHeight = squidsize / 2
 		const partScale = 0.1
 
-		const squidStartX = 80 + Math.random() * (width - 480)
-		const squidStartY = height - 100
+		console.log(spawnX)
+
+		const squidStartX = spawnX || 80 + Math.random() * (width - 480)
+		const squidStartY = spawnY || height - 100
 		const squidScale = 0.5
 		const headScale = 0.08
 		const squidWidth = squidsize * squidScale
@@ -130,12 +137,19 @@ const Squid: React.FC<{ className?: string; id: number; force?: number }> = ({
 		})
 
 		let forceVector = Vector.create(0, -1)
-		forceVector = Vector.rotate(forceVector, (-45 + Math.random() * 90) * (Math.PI / 180))
+		if (vectorX || vectorY) {
+			if (vectorX) forceVector.x = vectorX
+			if (vectorY) forceVector.y = vectorY
+		} else {
+			forceVector = Vector.rotate(forceVector, (-45 + Math.random() * 90) * (Math.PI / 180))
+		}
 		forceVector = Vector.mult(forceVector, 0.3 * force)
 
 		Body.applyForce(newSquidHeadBody, newSquidHeadBody.position, forceVector)
+		Body.rotate(newSquidHeadBody, Math.random() * 360 * (Math.PI / 180))
+		Body.setAngularVelocity(newSquidHeadBody, Math.random() * 6 - 3)
 		if (engine?.current?.world) World.add(engine.current.world, newSquid)
-	}, [engine, height, width, id, force])
+	}, [engine, height, width, id, force, spawnX, spawnY, vectorX, vectorY])
 
 	useEffect(() => {
 		if (isSpawned) return

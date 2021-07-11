@@ -27,6 +27,7 @@ body{
 
 .App .scene.greenscreen {
 	background-color:green;
+	
 }
 
 .App .scene canvas{

@@ -19,6 +19,11 @@ interface Avatar {
 	x?: number
 	y?: number
 	force?: number
+	vectorX?: number
+	vectorY?: number
+	spawnX?: number
+	spawnY?: number
+	torque?: number
 }
 interface EventOptions {
 	onFollow: boolean
@@ -221,3 +226,4 @@ const AppDataProvider: React.FC = ({ children }) => {
 
 export const useAppData = () => useContext(AppDataContext)
 export default AppDataProvider
+export type { Avatar }

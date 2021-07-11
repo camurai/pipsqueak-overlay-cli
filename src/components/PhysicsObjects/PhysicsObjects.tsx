@@ -10,8 +10,8 @@ const PhysicsObjects: React.FC<{ className?: string }> = ({ className }) => {
 	const { avatars, splashs, fireworks } = useAppData()
 	return (
 		<div data-test="PhysicsObjects" className={`PhysicsObjects ${className || ''}`}>
-			{avatars.map(({ id, isSpawned, force }) => {
-				return <Squid key={id} id={id || 0} force={force} />
+			{avatars.map((props) => {
+				return <Squid {...props} key={props.id} id={props.id || 0} />
 			})}
 			{splashs.map(({ id, x, y }) => (
 				<Splash key={id} id={id || 0} x={x} y={y} />

@@ -7,8 +7,6 @@ interface PhysicsData {
 	scene: HTMLDivElement | null
 }
 
-// interface BodyOrConstraintArray extends{}
-
 const defaultPhysicsData: PhysicsData = {
 	scene: null,
 }
@@ -57,11 +55,12 @@ export const PhysicsProvider: React.FC = ({ children }) => {
 	avatarsRef.current = avatars
 
 	const [chatWindow] = useState(
-		Bodies.rectangle(width - 275, height - 245, 410, 360, {
+		Bodies.rectangle(width - 275, height - 250, 410, 360, {
 			isStatic: true,
 			label: 'chatwindow',
 			render: {
-				visible: false,
+				visible: true,
+				fillStyle: 'green',
 			},
 		})
 	)
@@ -233,12 +232,22 @@ export const PhysicsProvider: React.FC = ({ children }) => {
 	}, [])
 
 	const cleanup = useCallback(() => {
-		Composite.remove(engine.current.world, chatWindow)
-		Composite.remove(engine.current.world, ceiling)
-		setTimeout(() => {
-			Composite.add(engine.current.world, chatWindow)
-			Composite.add(engine.current.world, ceiling)
-		}, 2000)
+		let timeout: NodeJS.Timeout
+		if (chatWindow.render.visible === true) {
+			Composite.remove(engine.current.world, chatWindow)
+			Composite.remove(engine.current.world, ceiling)
+			chatWindow.render.visible = false
+			// eslint-disable-next-line prefer-const
+			timeout = setTimeout(() => {
+				Composite.add(engine.current.world, chatWindow)
+				Composite.add(engine.current.world, ceiling)
+				chatWindow.render.visible = true
+			}, 2000)
+		}
+
+		return () => {
+			if (timeout) clearTimeout(timeout)
+		}
 	}, [chatWindow, ceiling])
 
 	return (

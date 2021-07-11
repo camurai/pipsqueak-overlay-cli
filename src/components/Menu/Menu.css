@@ -7,15 +7,25 @@
 
 .Menu .window {
     position:absolute;
-    top:0px;
-    right:10px;
+    top:660px;
+    right:80px;
+    width: 370px;
+    padding:10px;
 
 }
-
+.Menu .buttons{
+    height:60px;
+}
 
 .Menu button{
     background-color:black;
     color:white;
     border-width: 1px;
-    float:right;
+    float:left;
+    padding:5px;
+    margin:5px;
+}
+
+.Menu .Toggle{
+    float:left;
 }
