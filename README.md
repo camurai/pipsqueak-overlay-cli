@@ -1,3 +1,13 @@
+
+
+
+
+https://user-images.githubusercontent.com/5050970/131057879-f34871fc-a996-4b83-a472-46caf50a3656.mp4
+
+Overlay created for the Twitch streamer pipsqueak_squid: https://www.twitch.tv/pipsqueak_squid
+Allows the streamer to spawn squid characters that use matter.js physics to fly across the screen and collide with each other, the screen edge and streamer video window. Squids generate physics based splashes when the fall off screen. Squid spawning set to be triggered when a viewer follows the channel. Streamer can also trigger physics based fireworks.
+
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
